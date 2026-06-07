@@ -27,7 +27,9 @@ export default function DiscoverScreen({ videos, onUserClick, onVideoClick, dark
   const filteredVideos = videos.filter(video => {
     const textMatch = searchQuery.trim() === '' || 
       video.caption.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      video.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      video.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      video.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      video.user.displayName.toLowerCase().includes(searchQuery.toLowerCase());
     
     const tagMatch = !selectedTag || video.tags.includes(selectedTag);
 

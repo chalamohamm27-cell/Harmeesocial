@@ -27,6 +27,7 @@ export interface Video {
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
+  viewsCount: number;
   isLiked: boolean;
   isShared: boolean;
   tags: string[];

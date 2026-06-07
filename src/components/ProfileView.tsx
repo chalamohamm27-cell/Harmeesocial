@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Grid, Edit3, Save, MapPin, Link as LinkIcon, User as UserIcon, Plus, LogOut } from 'lucide-react';
+import { Settings, Grid, Edit3, Save, MapPin, Link as LinkIcon, User as UserIcon, Plus, LogOut, Clock, Eye } from 'lucide-react';
 import { User, Video } from '../types';
 import { MOCK_AVATARS } from '../firebase';
 
@@ -11,6 +11,7 @@ interface ProfileViewProps {
   darkMode: boolean;
   onLogout?: () => void;
   userVideos?: Video[];
+  watchHistoryVideos?: Video[];
   onVideoClick?: (videoId: string) => void;
 }
 
@@ -22,12 +23,14 @@ export default function ProfileView({
   darkMode,
   onLogout,
   userVideos = [],
+  watchHistoryVideos = [],
   onVideoClick
 }: ProfileViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDisplayName, setEditedDisplayName] = useState(user.displayName);
   const [editedBio, setEditedBio] = useState(user.bio);
   const [editedAvatar, setEditedAvatar] = useState(user.avatar);
+  const [activeTab, setActiveTab] = useState<'creatives' | 'history'>('creatives');
 
   // Pre-made mock photos to fill the grid based on user profile theme
   const getGridPhotos = (username: string) => {
@@ -264,50 +267,115 @@ export default function ProfileView({
         </div>
 
         {/* Grid navigation options headers */}
-        <div className="flex items-center justify-start gap-2 mt-4.5 mb-3 px-1">
-          <Grid size={15} className="text-indigo-500" />
-          <span className="text-xs font-bold tracking-tight uppercase">Creatives & Media</span>
-        </div>
-
-        {/* Photos Grid rendering mock assets with elegant cover effect */}
-        <div className="grid grid-cols-2 gap-2.5">
-          {userVideos && userVideos.length > 0 ? (
-            userVideos.map((video) => (
-              <div 
-                key={video.id}
-                onClick={() => onVideoClick && onVideoClick(video.id)}
-                className="aspect-square rounded-2xl overflow-hidden bg-zinc-800 hover:scale-[1.02] hover:shadow-md transition-all group relative cursor-pointer"
-              >
-                <img 
-                  src={video.thumbnailUrl} 
-                  alt={video.caption} 
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                  <span className="text-[9px] font-mono font-medium text-white/95 tracking-wide">PLAY REEL</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            gridPhotos.map((url, idx) => (
-              <div 
-                key={idx} 
-                className="aspect-square rounded-2xl overflow-hidden bg-zinc-800 hover:scale-[1.02] hover:shadow-md transition-all group relative cursor-pointer"
-              >
-                <img 
-                  src={url} 
-                  alt="Post asset grid" 
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                  <span className="text-[9px] font-mono font-medium text-white/95 tracking-wide">VIEW GALLERY</span>
-                </div>
-              </div>
-            ))
+        <div className="flex items-center justify-start gap-4 mt-4.5 mb-3 px-1 border-b border-zinc-200 dark:border-zinc-800/80">
+          <button 
+            onClick={() => setActiveTab('creatives')}
+            className={`flex items-center gap-1.5 pb-2 transition-colors duration-200 border-b-2 font-bold tracking-tight uppercase text-xs ${
+              activeTab === 'creatives' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-zinc-500 hover:text-zinc-650 dark:text-zinc-400 dark:hover:text-zinc-300'
+            }`}
+          >
+            <Grid size={13} />
+            Creatives
+          </button>
+          
+          {isCurrentUser && (
+            <button 
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-1.5 pb-2 transition-colors duration-200 border-b-2 font-bold tracking-tight uppercase text-xs ${
+                activeTab === 'history' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-zinc-500 hover:text-zinc-650 dark:text-zinc-400 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Clock size={13} />
+              Watch History
+            </button>
           )}
         </div>
+
+        {/* Dynamic rendering based on selected tab */}
+        {activeTab === 'creatives' ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {userVideos && userVideos.length > 0 ? (
+              userVideos.map((video) => (
+                <div 
+                  key={video.id}
+                  onClick={() => onVideoClick && onVideoClick(video.id)}
+                  className="aspect-square rounded-2xl overflow-hidden bg-zinc-800 hover:scale-[1.02] hover:shadow-md transition-all group relative cursor-pointer"
+                >
+                  <img 
+                    src={video.thumbnailUrl} 
+                    alt={video.caption} 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+                    <span className="text-[9px] font-mono font-medium text-white/95 tracking-wide">PLAY REEL</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              gridPhotos.map((url, idx) => (
+                <div 
+                  key={idx} 
+                  className="aspect-square rounded-2xl overflow-hidden bg-zinc-800 hover:scale-[1.02] hover:shadow-md transition-all group relative cursor-pointer"
+                >
+                  <img 
+                    src={url} 
+                    alt="Post asset grid" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+                    <span className="text-[9px] font-mono font-medium text-white/95 tracking-wide">VIEW GALLERY</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {watchHistoryVideos.length > 0 ? (
+              watchHistoryVideos.map((video) => (
+                <div 
+                  key={`history-${video.id}`}
+                  onClick={() => onVideoClick && onVideoClick(video.id)}
+                  className="flex gap-3 items-center rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/50 cursor-pointer p-2 transition-all group"
+                >
+                  <div className="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 relative">
+                    <img 
+                      src={video.thumbnailUrl} 
+                      alt={video.caption} 
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0 pr-2">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate w-full">
+                      {video.user.displayName}
+                    </span>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-sans line-clamp-2 mt-0.5">
+                      {video.caption}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-1.5 text-zinc-400 dark:text-zinc-500">
+                      <Eye size={12} />
+                      <span className="text-[10px] font-medium font-mono text-indigo-600 dark:text-indigo-400">
+                        {video.viewsCount > 1000 ? (video.viewsCount / 1000).toFixed(1) + 'k' : (video.viewsCount || 0)} views
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-8 flex flex-col items-center justify-center text-center">
+                <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center text-zinc-400 mb-3">
+                  <Clock size={20} />
+                </div>
+                <p className="text-xs text-zinc-500 font-medium">No watch history yet</p>
+                <p className="text-[10px] text-zinc-400 mt-1">Videos you watch will appear here</p>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
 

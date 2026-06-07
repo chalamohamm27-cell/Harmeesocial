@@ -41,6 +41,9 @@ export default function App() {
   const [activeCallType, setActiveCallType] = useState<CallType>('audio');
   const [activeCallStage, setActiveCallStage] = useState<CallStage>('idle');
 
+  // Watch history tracking
+  const [watchHistory, setWatchHistory] = useState<string[]>([]);
+
   // Computing unread chat message stats
   const totalUnreadChats = chats.reduce((acc, c) => acc + c.unreadCount, 0);
   
@@ -327,6 +330,7 @@ export default function App() {
       likesCount: 0,
       commentsCount: 0,
       sharesCount: 0,
+      viewsCount: 0,
       isLiked: false,
       isShared: false,
       comments: [],
@@ -338,6 +342,33 @@ export default function App() {
     const path = `videos/${videoId}`;
     try {
       await setDoc(doc(db, 'videos', videoId), newVideo);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  };
+
+  // View action updates
+  const handleViewVideo = async (videoId: string) => {
+    const videoObj = videos.find(v => v.id === videoId);
+    if (!videoObj) return;
+
+    setWatchHistory(prev => {
+      const updated = prev.filter(id => id !== videoId);
+      return [videoId, ...updated].slice(0, 50); // Keep last 50 viewed videos
+    });
+
+    const updatedViews = (videoObj.viewsCount || 0) + 1;
+
+    setVideos(prev => prev.map(v => v.id === videoId ? {
+      ...v,
+      viewsCount: updatedViews
+    } : v));
+
+    const path = `videos/${videoId}`;
+    try {
+      await updateDoc(doc(db, 'videos', videoId), {
+        viewsCount: updatedViews
+      });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
     }
@@ -563,6 +594,7 @@ export default function App() {
                       onLikeToggle={handleLikeToggle}
                       onAddComment={handleAddComment}
                       onShare={handleShare}
+                      onViewed={handleViewVideo}
                       onUserClick={handleProfileRouteJump}
                       darkMode={darkMode}
                       onLogout={handleLogout}
@@ -617,6 +649,7 @@ export default function App() {
                       darkMode={darkMode}
                       onLogout={handleLogout}
                       userVideos={videos.filter(v => v.user.id === (currentUser ? currentUser.uid : 'demo_user_id'))}
+                      watchHistoryVideos={videos.filter(v => watchHistory.includes(v.id)).sort((a, b) => watchHistory.indexOf(a.id) - watchHistory.indexOf(b.id))}
                       onVideoClick={(videoId) => {
                         const findVideo = videos.find(v => v.id === videoId);
                         if (findVideo) {

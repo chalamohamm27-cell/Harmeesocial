@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, Volume2, VolumeX, Play, Pause, Send, Check, LogOut } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, Play, Pause, Send, Check, LogOut, Eye, Link as LinkIcon, Copy, Twitter, Facebook } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Video, Comment, User } from '../types';
 
@@ -9,6 +9,7 @@ interface VideoFeedProps {
   onLikeToggle: (id: string) => void;
   onAddComment: (videoId: string, commentText: string) => void;
   onShare: (id: string) => void;
+  onViewed: (id: string) => void;
   onUserClick: (user: User) => void;
   darkMode: boolean;
   onLogout?: () => void;
@@ -22,6 +23,7 @@ export default function VideoFeed({
   onLikeToggle, 
   onAddComment, 
   onShare, 
+  onViewed,
   onUserClick, 
   darkMode,
   onLogout,
@@ -32,6 +34,7 @@ export default function VideoFeed({
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showComments, setShowComments] = useState<string | null>(null);
+  const [showShareDialog, setShowShareDialog] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -43,6 +46,16 @@ export default function VideoFeed({
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const viewedSession = useRef<Set<string>>(new Set());
+
+  // Track simple view counts
+  useEffect(() => {
+    const activeVideo = videos[currentIdx];
+    if (activeVideo && !viewedSession.current.has(activeVideo.id)) {
+      viewedSession.current.add(activeVideo.id);
+      onViewed(activeVideo.id);
+    }
+  }, [currentIdx, videos, onViewed]);
 
   // Configure video observer to handle playing and pausing on scroll
   useEffect(() => {
@@ -152,21 +165,31 @@ export default function VideoFeed({
 
   const triggerShare = (video: Video) => {
     setIsShareBouncing(true);
-    onShare(video.id);
-    setShareFeedback(video.id);
-    setToastMessage("Link copied! Share with your friends! 🌏🚀");
+    setShowShareDialog(video.id);
     
     setTimeout(() => {
       setIsShareBouncing(false);
     }, 700);
+  };
 
-    setTimeout(() => {
-      setShareFeedback(null);
-    }, 2000);
+  const executeCopyShare = () => {
+    if (showShareDialog) {
+      onShare(showShareDialog);
+      navigator.clipboard.writeText(`https://harmeesocial.app/v/${showShareDialog}`);
+      setToastMessage("Link copied! Share with your friends! 🌏🚀");
+      
+      const sharedId = showShareDialog;
+      setShowShareDialog(null);
+      setShareFeedback(sharedId);
+      
+      setTimeout(() => {
+        setShareFeedback(null);
+      }, 2000);
 
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+      setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+    }
   };
 
   if (videos.length === 0) {
@@ -390,6 +413,16 @@ export default function VideoFeed({
               </span>
             </div>
 
+            {/* View count indicator */}
+            <div className="flex flex-col items-center text-center mt-1">
+              <div className="w-11 h-11 rounded-full bg-black/20 flex items-center justify-center text-white/90 cursor-default">
+                <Eye size={20} />
+              </div>
+              <span className="text-[10px] text-white font-medium font-sans mt-1 shadow-sm drop-shadow-sm">
+                {activeVideo.viewsCount > 1000 ? (activeVideo.viewsCount / 1000).toFixed(1) + 'k' : activeVideo.viewsCount || 0}
+              </span>
+            </div>
+
           </div>
 
           {/* Custom Video Metadata overlay on left bottom side */}
@@ -514,6 +547,81 @@ export default function VideoFeed({
                   <Send size={14} />
                 </button>
               </form>
+
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic Slide-Up Share Bottom Drawer */}
+      <AnimatePresence>
+        {showShareDialog && (
+          <>
+            {/* Dim Backdrop wrapper */}
+            <div 
+              className="absolute inset-0 bg-black/60 z-30"
+              onClick={() => setShowShareDialog(null)}
+            />
+            {/* Content Drawer wrapper */}
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className={`absolute bottom-0 left-0 right-0 rounded-t-[32px] p-5 h-[280px] flex flex-col z-40 ${
+                darkMode ? 'bg-zinc-950 text-white border-t border-zinc-900' : 'bg-white text-slate-950 border-t border-slate-100'
+              }`}
+            >
+              {/* Drag line handle layout */}
+              <div className="w-12 h-1.5 bg-zinc-400 dark:bg-zinc-800 rounded-full mx-auto mb-4 cursor-pointer" onClick={() => setShowShareDialog(null)}></div>
+              
+              <div className="flex items-center justify-between mb-6 px-1">
+                <h3 className="text-sm font-bold tracking-tight">
+                  Share to
+                </h3>
+                <button 
+                  onClick={() => setShowShareDialog(null)}
+                  className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-white font-medium cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Share Options Carousel */}
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-1">
+                <div className="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer" onClick={executeCopyShare}>
+                  <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-800 dark:text-zinc-200 transition-transform active:scale-95">
+                    <Copy size={24} />
+                  </div>
+                  <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">Copy Link</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer">
+                  <div className="w-14 h-14 rounded-full bg-[#1DA1F2]/10 flex items-center justify-center text-[#1DA1F2] transition-transform active:scale-95">
+                    <Twitter size={24} />
+                  </div>
+                  <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">Twitter</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer">
+                  <div className="w-14 h-14 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] transition-transform active:scale-95">
+                    <Facebook size={24} fill="currentColor" className="border-none" />
+                  </div>
+                  <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">Facebook</span>
+                </div>
+              </div>
+
+              {/* URL Display */}
+              <div className={`mt-auto mb-2 flex items-center justify-between p-3 rounded-xl border ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate flex-1 font-mono">
+                  https://harmeesocial.app/v/{showShareDialog}
+                </span>
+                <button 
+                  onClick={executeCopyShare}
+                  className="ml-3 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wide hover:opacity-80 flex items-center gap-1 cursor-pointer"
+                >
+                  <LinkIcon size={12} />
+                  Copy
+                </button>
+              </div>
 
             </motion.div>
           </>

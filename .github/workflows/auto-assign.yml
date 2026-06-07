@@ -1,36 +1,19 @@
-name: Auto Assign Author
-
+name: Auto Assign
 on:
   issues:
     types: [opened]
   pull_request:
     types: [opened]
-
 jobs:
-  auto-assign:
+  run:
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
     steps:
-      - name: Assign Author
-        uses: actions/github-script@v7
-        with:
-          script: |
-            if (context.eventName === 'issues') {
-              console.log(`Assigning issue #${context.issue.number} to chalamohammed27-cell`);
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                assignees: ['chalamohammed27-cell']
-              });
-            } else if (context.eventName === 'pull_request') {
-              console.log(`Assigning PR #${context.issue.number} to chalamohammed27-cell`);
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                assignees: ['chalamohammed27-cell']
-              });
-            }
+    - name: 'Auto-assign issue'
+      uses: pozil/auto-assign-issue@v1
+      with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: chalamohammed27-cell
+          numOfAssignee: 1
