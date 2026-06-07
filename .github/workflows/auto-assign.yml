@@ -18,19 +18,19 @@ jobs:
         with:
           script: |
             if (context.eventName === 'issues') {
-              console.log(`Assigning issue #${context.issue.number} to ${context.actor}`);
+              console.log(`Assigning issue #${context.issue.number} to chalamohammed27-cell`);
               await github.rest.issues.addAssignees({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                assignees: [context.actor]
+                assignees: ['chalamohammed27-cell']
               });
             } else if (context.eventName === 'pull_request') {
-              console.log(`Assigning PR #${context.issue.number} to ${context.actor}`);
+              console.log(`Assigning PR #${context.issue.number} to chalamohammed27-cell`);
               await github.rest.issues.addAssignees({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                assignees: [context.actor]
+                assignees: ['chalamohammed27-cell']
               });
             }
