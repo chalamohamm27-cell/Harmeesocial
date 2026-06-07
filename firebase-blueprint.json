@@ -1,0 +1,153 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Information stored for each user registered on Harmee Social",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the user (matching Firebase Auth UID)"
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique handle of the user"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Name shown to other users"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "URL link to profile photo"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short bio or tagline"
+        },
+        "followersCount": {
+          "type": "integer"
+        },
+        "followingCount": {
+          "type": "integer"
+        },
+        "postsCount": {
+          "type": "integer"
+        }
+      },
+      "required": ["id", "username", "displayName", "avatar", "bio"]
+    },
+    "Video": {
+      "title": "Video Feed Item",
+      "description": "Short video clip posted by a content creator",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "videoUrl": {
+          "type": "string"
+        },
+        "thumbnailUrl": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "user": {
+          "type": "object",
+          "description": "Denormalized profile object of the creator who posted the video"
+        },
+        "likesCount": {
+          "type": "integer"
+        },
+        "commentsCount": {
+          "type": "integer"
+        },
+        "sharesCount": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array"
+        },
+        "comments": {
+          "type": "array"
+        },
+        "likedBy": {
+          "type": "array",
+          "description": "Optional list of user IDs who liked this video to prevent duplicate votes"
+        }
+      },
+      "required": ["id", "videoUrl", "thumbnailUrl", "caption", "user"]
+    },
+    "ChatChannel": {
+      "title": "Chat Channel",
+      "description": "A communication channel between two users",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "user": {
+          "type": "object",
+          "description": "Denormalized recipient profile object"
+        },
+        "unreadCount": {
+          "type": "integer"
+        },
+        "messages": {
+          "type": "array"
+        }
+      },
+      "required": ["id", "user", "messages"]
+    },
+    "Notification": {
+      "title": "Notification Item",
+      "description": "Social notification alert for feed activities",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["like", "comment", "follow", "mention"]
+        },
+        "user": {
+          "type": "object"
+        },
+        "targetText": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "recipientId": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "type", "user", "timestamp", "read", "recipientId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Profile lookup for authenticated users list"
+    },
+    "/videos/{videoId}": {
+      "schema": "Video",
+      "description": "Video feed collection storing shared creative content"
+    },
+    "/chats/{chatId}": {
+      "schema": "ChatChannel",
+      "description": "Chat channels mapped between individual network communication nodes"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User Inbox Alerts and feed activity updates targeted to users"
+    }
+  }
+}

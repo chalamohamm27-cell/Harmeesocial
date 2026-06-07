@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. Users Collection Rules
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasAny(['displayName', 'avatar', 'bio', 'followersCount', 'followingCount', 'postsCount'])
+      );
+      allow delete: if false;
+
+      function isValidUser(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.username is string && data.username.size() <= 40
+          && data.displayName is string && data.displayName.size() <= 100
+          && data.avatar is string && data.avatar.size() <= 1000
+          && data.bio is string && data.bio.size() <= 500;
+      }
+    }
+
+    // 2. Videos Collection Rules
+    match /videos/{videoId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(videoId) && isValidVideo(incoming()) && (incoming().user.id == request.auth.uid || incoming().user.id.startsWith("user_"));
+      allow update: if isSignedIn() && isValidVideo(incoming()) && (
+        // Action: Owner updates caption
+        (incoming().user.id == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['caption'])) ||
+        // Action: Any user likes/unlikes
+        (incoming().diff(existing()).affectedKeys().hasAny(['likesCount', 'likedBy'])) ||
+        // Action: Any user comments
+        (incoming().diff(existing()).affectedKeys().hasAny(['comments', 'commentsCount'])) ||
+        // Action: Any user shares
+        (incoming().diff(existing()).affectedKeys().hasOnly(['sharesCount']))
+      );
+      allow delete: if isSignedIn() && existing().user.id == request.auth.uid;
+
+      function isValidVideo(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.videoUrl is string && data.videoUrl.size() <= 1000
+          && data.thumbnailUrl is string && data.thumbnailUrl.size() <= 1000
+          && data.caption is string && data.caption.size() <= 1000
+          && data.user is map;
+      }
+    }
+
+    // 3. Chats Collection Rules
+    match /chats/{chatId} {
+      allow read: if isSignedIn() && (chatId.contains(request.auth.uid) || true); // Allow reading chat lists / messages
+      allow create: if isSignedIn() && isValidChat(incoming());
+      allow update: if isSignedIn() && isValidChat(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasAny(['messages', 'unreadCount'])
+      );
+      allow delete: if isSignedIn() && chatId.contains(request.auth.uid);
+
+      function isValidChat(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.user is map
+          && data.messages is list;
+      }
+    }
+
+    // 4. Notifications Collection Rules
+    match /notifications/{notificationId} {
+      allow read, update, delete: if isSignedIn() && existing().recipientId == request.auth.uid;
+      allow create: if isSignedIn() && isValidNotification(incoming());
+
+      function isValidNotification(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.type is string && data.type.size() <= 50
+          && data.user is map
+          && data.recipientId is string && data.recipientId.size() <= 128
+          && data.read is bool;
+      }
+    }
+
+  }
+}

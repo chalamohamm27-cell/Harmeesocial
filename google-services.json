@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "109314842338",
+    "project_id": "project-27a36cdd-6592-4fd4-8fa",
+    "storage_bucket": "project-27a36cdd-6592-4fd4-8fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109314842338:android:b63c3a79cf80c10da808bb",
+        "android_client_info": {
+          "package_name": "Com.Harmeesocial.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109314842338-39ul7ddcpi2gmm2ddot984sa5vl74di0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwvFUMBppPNW_D_KzUZkXHUPDlMWIt3as"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109314842338-39ul7ddcpi2gmm2ddot984sa5vl74di0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

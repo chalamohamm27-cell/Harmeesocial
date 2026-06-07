@@ -1,0 +1,6 @@
+{
+  "name": "Harmee Social",
+  "description": "A modern Android social media simulator featuring vertical reels, live chats, real-time voice and video calls, follow metrics, and a dynamic Material 3 visual UI.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
