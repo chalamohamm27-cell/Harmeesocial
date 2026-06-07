@@ -1,3 +1,3 @@
 # Harmee Social
 
-Repository: [https://github.com/chalamohamm27-cell/Harmeesocial.git](https://github.com/chalamohamm27-cell/Harmeesocial.git)
+A short-form video sharing application built with React, Vite, and Tailwind CSS.
