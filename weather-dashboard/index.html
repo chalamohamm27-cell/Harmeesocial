@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Weather Dashboard</h1>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Enter city name..." />
+                <button id="searchBtn"><i class="fas fa-search"></i></button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Current Weather -->
+            <section id="currentWeather" class="weather-card current-weather">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </section>
+
+            <!-- 5-Day Forecast -->
+            <section class="forecast-section">
+                <h2>5-Day Forecast</h2>
+                <div id="forecastContainer" class="forecast-container">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+            </section>
+
+            <!-- Weather Details -->
+            <section id="weatherDetails" class="weather-details">
+                <div class="detail-card">
+                    <h3>Humidity</h3>
+                    <p id="humidity">--</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Wind Speed</h3>
+                    <p id="windSpeed">--</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Pressure</h3>
+                    <p id="pressure">--</p>
+                </div>
+                <div class="detail-card">
+                    <h3>Feels Like</h3>
+                    <p id="feelsLike">--</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Data provided by OpenWeatherMap API</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
