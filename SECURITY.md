@@ -2,20 +2,28 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+The latest version of Banana is actively supported with security updates.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Version | Supported |
+|---------|-----------|
+| Latest  | ✅        |
+| Older Versions | ❌ |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability, please report it responsibly.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+**Do not open a public issue for security-related problems.**
+
+Instead, contact the project maintainer directly through GitHub.
+
+Please include:
+
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix (if available)
+
+We will review all reports and respond as quickly as possible.
+
+Thank you for helping keep Banana secure.
